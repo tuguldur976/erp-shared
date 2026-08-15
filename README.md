@@ -8,8 +8,10 @@ and supplychain (SCM). Later: `/types`, `/utils`.
 
 ```jsonc
 // pnpm consumer (spark-resellers) and npm consumer (supplychain) — same line:
-"dependencies": { "@erp/shared": "github:tuguldur976/erp-shared#v0.1.0" }
+"dependencies": { "@erp/shared": "git+https://github.com/tuguldur976/erp-shared.git#v0.1.0" }
 ```
+
+Use the explicit git+https form — the github: shorthand can resolve to git+ssh, which fails in containers/CI without GitHub SSH keys.
 
 pnpm 10 blocks dependency build scripts by default; the consumer's root
 package.json needs:
