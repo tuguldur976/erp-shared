@@ -4,8 +4,13 @@
   "description": "Shared ERP design tokens (and later: types, utils) for spark-resellers and supplychain",
   "type": "module",
   "license": "MIT",
-  "repository": { "type": "git", "url": "https://github.com/tuguldur976/erp-shared" },
-  "files": ["dist"],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tuguldur976/erp-shared"
+  },
+  "files": [
+    "dist"
+  ],
   "exports": {
     "./tokens": {
       "types": "./dist/tokens/index.d.ts",
@@ -19,9 +24,12 @@
     "test": "vitest run"
   },
   "devDependencies": {
+    "@types/node": "^26.2.0",
     "tsx": "^4.19.0",
     "typescript": "^5.6.0",
     "vitest": "^3.0.0"
   },
-  "engines": { "node": ">=20" }
+  "engines": {
+    "node": ">=20"
+  }
 }
