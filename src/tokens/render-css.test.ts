@@ -17,4 +17,17 @@ describe("renderThemeCss (light default everywhere, .dark overrides)", () => {
   it("carries the generated-file warning header", () => {
     expect(css.startsWith("/* AUTO-GENERATED")).toBe(true);
   });
+  // R93: colour, radius and font come ONLY from theme.css. v0.1 shipped the
+  // colours alone, so core-web (pure CSS) never got a font at all.
+  it("declares Inter from files beside theme.css, before any rule uses it", () => {
+    expect(css.match(/@font-face \{/g)).toHaveLength(4);
+    expect(css).toContain("font-family: 'Inter';");
+    expect(css).toContain("src: url('./fonts/inter-cyrillic-ext-wght-normal.woff2') format('woff2-variations');");
+    expect(css.indexOf("@font-face")).toBeLessThan(css.indexOf(":root"));
+  });
+  it("puts the font and radius variables on :root only — they do not change with the theme", () => {
+    expect(css).toMatch(/:root \{[^}]*--erp-font-sans: 'Inter',/);
+    expect(css).toMatch(/:root \{[^}]*--erp-radius-card: 11px;/);
+    expect(css.match(/--erp-font-sans:/g)).toHaveLength(1);
+  });
 });

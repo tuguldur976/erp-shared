@@ -1,6 +1,6 @@
 {
   "name": "@erp/shared",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Shared ERP design tokens (and later: types, utils) for spark-resellers and supplychain",
   "type": "module",
   "license": "MIT",
@@ -24,6 +24,7 @@
     "test": "vitest run"
   },
   "devDependencies": {
+    "@fontsource-variable/inter": "^5.3.0",
     "@types/node": "^26.2.0",
     "tsx": "^4.19.0",
     "typescript": "^5.6.0",

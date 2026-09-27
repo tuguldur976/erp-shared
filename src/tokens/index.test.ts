@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { C, FONT, PALETTE, RADIUS, Z, cssVarName, toCssVars } from "./index";
+import { C, FONT, FONT_FACES, FONT_STACK, PALETTE, RADIUS, Z, cssVarName, toCssVars, toLayoutVars } from "./index";
 
 describe("PALETTE", () => {
   it("dark and light define exactly the same keys", () => {
@@ -50,7 +50,46 @@ describe("Z", () => {
 
 describe("FONT / RADIUS", () => {
   it("pins font stack and radii", () => {
-    expect(FONT).toBe("'DM Sans','Helvetica Neue',sans-serif");
+    expect(FONT).toBe("var(--erp-font-sans)");
+    expect(FONT_STACK.startsWith("'Inter',")).toBe(true);
     expect(RADIUS).toEqual({ card: 11, input: 8, button: 7 });
+  });
+});
+
+// The UI is Mongolian Cyrillic. DM Sans (v0.1) had no Cyrillic at all, so
+// every Mongolian word silently fell back to another font mid-line.
+describe("FONT_FACES", () => {
+  const covers = (cp: number): boolean =>
+    FONT_FACES.some((f) =>
+      f.unicodeRange.split(",").some((r) => {
+        const [lo, hi] = r.replace("U+", "").split("-").map((h) => parseInt(h, 16));
+        return cp >= lo && cp <= (hi ?? lo);
+      }),
+    );
+
+  it("covers Mongolian Cyrillic, including Ө and Ү", () => {
+    for (const ch of "АяЁёӨөҮү") expect(covers(ch.codePointAt(0)!)).toBe(true);
+  });
+
+  it("covers the tugrik sign and plain Latin digits", () => {
+    expect(covers(0x20ae)).toBe(true);
+    expect(covers("7".codePointAt(0)!)).toBe(true);
+  });
+
+  it("names one woff2 file per subset", () => {
+    expect(FONT_FACES.map((f) => f.file)).toEqual(
+      FONT_FACES.map((f) => `inter-${f.subset}-wght-normal.woff2`),
+    );
+  });
+});
+
+describe("toLayoutVars", () => {
+  it("emits the font stack and every radius in px", () => {
+    expect(toLayoutVars()).toEqual({
+      "--erp-font-sans": FONT_STACK,
+      "--erp-radius-card": "11px",
+      "--erp-radius-input": "8px",
+      "--erp-radius-button": "7px",
+    });
   });
 });

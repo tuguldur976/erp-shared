@@ -31,6 +31,24 @@ import { C, FONT, PALETTE, RADIUS, Z, toCssVars } from "@erp/shared/tokens";
 @import "@erp/shared/tokens/theme.css";
 ```
 
+`theme.css` carries everything R93 assigns to it: the `--c-*` colours, the
+`--erp-radius-*` radii, `--erp-font-sans`, and the `@font-face` rules for
+**Inter** (since v0.2.0). The font files ship inside this package, next to
+`theme.css`, so an app loads no web font of its own — no Google Fonts link.
+A Tailwind v4 app maps the font once:
+
+```css
+@theme inline {
+  --font-sans: var(--erp-font-sans);
+}
+```
+
+`FONT` in `/tokens` is `var(--erp-font-sans)`, a reference like `C`, so inline
+styles follow the same variable.
+
+v0.1.0 used DM Sans, which has no Cyrillic: Mongolian text fell back to
+another font mid-line. Inter covers Cyrillic including Ө and Ү, and the ₮ sign.
+
 ## Release flow
 
 1. Change tokens → `npm test` → commit.
