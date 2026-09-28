@@ -121,7 +121,11 @@ session cookie байхгүй бол алдаа. Алдааны мессеж:
 |---|---|
 | 401 | `Core refused sign-in for <email> (401): wrong email or password.` — хувьсагчийн нэрийг бичихгүй: email нь admin ч, scm-ийн E2E хэрэглэгч (`E2E_USER_A_PASSWORD`) ч байж болно; аль хувьсагч гэдгийг email-ээс хүн шууд таньна |
 | 429 | `Core sign-in limit hit (3 per 10 s). Wait 10 s and run again.` |
-| бусад / сүлжээ | `Stack not reachable at <baseURL> (<status or error>). Is it running?` |
+| бусад статус (403, 404, 500 …) | `Core sign-in at <baseURL> answered <status>.` — «not reachable» биш: 403 (Origin таарахгүй) эсвэл 404 (proxy-ийн allowlist) үед stack ажиллаж байгаа |
+| сүлжээний алдаа | `Stack not reachable at <baseURL> (<ECONNREFUSED …>). Is it running?` |
+
+Туслах: `cookieHeader(cookies): string` (`a=1; b=2` — scm seed-ийн `coreApi`-д),
+`hasSessionCookie(cookies): boolean`.
 
 ```ts
 coreSessionAlive(baseURL: string, cookies: Cookie[]): Promise<boolean>
@@ -217,6 +221,6 @@ throw хийхгүй (`unknown` + шалтгаан). Хэвлэх нь моду�
 | Эрсдэл | Хариу |
 |---|---|
 | core-api cookie нэрийг солих | `SESSION_COOKIE_NAMES` гурав дахь хуулбар болно; `signInCore` «session cookie байхгүй» гэж шууд унана — чимээгүй биш |
-| auth proxy-ийн allowlist-аас `sign-in/email` хасагдах | `signInCore` 404 → «Stack not reachable (404)» — мессежид статус орно |
+| auth proxy-ийн allowlist-аас `sign-in/email` хасагдах | `signInCore` → `Core sign-in at … answered 404.` — мессежид статус орно |
 | prompt 32 erp-core `e2e/`-г зэрэг засах | Merge-ийн өмнө `main` дээр rebase, тэдний мөрийг хадгална |
 | scm-д өөр session идэвхтэй | Тусдаа worktree; үндсэн checkout-ийн branch-ийг солихгүй |
