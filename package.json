@@ -1,7 +1,7 @@
 {
   "name": "@erp/shared",
-  "version": "0.2.0",
-  "description": "Shared ERP design tokens (and later: types, utils) for spark-resellers and supplychain",
+  "version": "0.3.0",
+  "description": "Shared ERP design tokens and E2E helpers for the ERP module repos",
   "type": "module",
   "license": "MIT",
   "repository": {
@@ -16,7 +16,11 @@
       "types": "./dist/tokens/index.d.ts",
       "import": "./dist/tokens/index.js"
     },
-    "./tokens/theme.css": "./dist/tokens/theme.css"
+    "./tokens/theme.css": "./dist/tokens/theme.css",
+    "./e2e": {
+      "types": "./dist/e2e/index.d.ts",
+      "import": "./dist/e2e/index.js"
+    }
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json && tsx scripts/generate-theme-css.ts",
