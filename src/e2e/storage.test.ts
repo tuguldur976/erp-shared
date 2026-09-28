@@ -1,4 +1,4 @@
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { chmodSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
@@ -80,6 +80,15 @@ describe("readStorageState / writeStorageState", () => {
     const state = stored("http://erp.localhost", "v");
     writeStorageState(path, state);
     expect(readStorageState(path)).toEqual(state);
+  });
+
+  // v0.3.0 minor: the mode applied only when the file was created.
+  it("makes an existing file owner-only too", () => {
+    const path = join(dir, "old.json");
+    writeFileSync(path, "{}");
+    chmodSync(path, 0o644);
+    writeStorageState(path, stored("http://erp.localhost", "v"));
+    expect(statSync(path).mode & 0o777).toBe(0o600);
   });
 
   it("answers null for a missing file", () => {
@@ -182,6 +191,20 @@ describe("ensureCoreSession", () => {
     stack = await stackWithSession();
     const statePath = join(dir, "a.json");
     writeFileSync(statePath, JSON.stringify({ cookies: [null], origins: [] }));
+
+    const result = await ensureCoreSession({ baseURL: stack.baseURL, statePath, credentials: () => creds });
+
+    expect(result.reused).toBe(false);
+    expect(stack.requests.map((r) => r.url)).toEqual([SIGN_IN_PATH]);
+  });
+
+  it("signs in without asking the stack when the file holds no session cookie", async () => {
+    stack = await stackWithSession();
+    const statePath = join(dir, "a.json");
+    writeStorageState(statePath, {
+      cookies: [toStorageCookie(stack.baseURL, { name: "scm_jwt", value: "jwt" }, "/scm")],
+      origins: [],
+    });
 
     const result = await ensureCoreSession({ baseURL: stack.baseURL, statePath, credentials: () => creds });
 

@@ -9,7 +9,7 @@ Later: `/types`, `/utils`.
 
 ```jsonc
 // pnpm consumer (spark-resellers) and npm consumer (supplychain) — same line:
-"dependencies": { "@erp/shared": "git+https://github.com/tuguldur976/erp-shared.git#v0.1.0" }
+"dependencies": { "@erp/shared": "git+https://github.com/tuguldur976/erp-shared.git#v0.3.1" }
 ```
 
 Use the explicit git+https form — the github: shorthand can resolve to git+ssh, which fails in containers/CI without GitHub SSH keys.
@@ -69,7 +69,10 @@ await ensureCoreSession({                    // reuses the saved cookie while it
 
 Sign-in goes through core-web's public proxy `POST /api/core/auth/sign-in/email`,
 so no dev port is needed. Core allows 3 sign-ins per 10 s — that is why a live
-saved cookie is always tried first. `checkStackFreshness` warns when the running
+saved cookie is always tried first. Every suite now signs in through that one
+door, so they share one budget: scm's seed plus its two users is already 3.
+Leave 10 s of quiet before the next suite or a re-run; the window restarts
+only after 10 s without a sign-in. `checkStackFreshness` warns when the running
 container is older than the module's last product commit.
 
 ## Release flow

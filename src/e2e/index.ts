@@ -16,4 +16,4 @@ export {
   type StorageCookie,
   type StorageState,
 } from "./storage.js";
-export { checkStackFreshness, staleStackWarning, type Freshness } from "./stale.js";
+export { checkStackFreshness, freshnessFrom, staleStackWarning, type Freshness } from "./stale.js";

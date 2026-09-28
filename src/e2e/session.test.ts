@@ -154,6 +154,6 @@ describe("coreSessionAlive", () => {
       res.setHeader("location", "/somewhere");
       res.end();
     });
-    await expect(coreSessionAlive(stack.baseURL, [])).rejects.toThrow(/\(302\)/);
+    await expect(coreSessionAlive(stack.baseURL, [])).rejects.toThrow("(302 → /somewhere)");
   });
 });

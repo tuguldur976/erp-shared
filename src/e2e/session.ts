@@ -87,5 +87,7 @@ export async function coreSessionAlive(baseURL: string, cookies: readonly Cookie
   if (res.status >= 300 && res.status < 400 && location !== null) {
     if (new URL(location, baseURL).pathname.startsWith("/login")) return false;
   }
-  throw unreachable(baseURL, String(res.status));
+  // The Location is a URL, not a secret, and names the cause (an http→https
+  // redirect, a proxy in the way) better than the bare status.
+  throw unreachable(baseURL, location === null ? String(res.status) : `${res.status} → ${location}`);
 }

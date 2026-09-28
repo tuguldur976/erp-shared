@@ -1,7 +1,7 @@
 // Playwright's storageState file, written without Playwright (spec S3): a
 // saved Core cookie is reused while it is alive, because Core allows only 3
 // sign-ins per 10 s and scm once drew a 429 by signing in on every run.
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { chmodSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 import { coreSessionAlive, hasSessionCookie, signInCore, type Cookie } from "./session.js";
 
@@ -46,6 +46,8 @@ function isCookieEntry(entry: unknown): entry is StorageCookie {
 export function writeStorageState(path: string, state: StorageState): void {
   mkdirSync(dirname(path), { recursive: true });
   writeFileSync(path, JSON.stringify(state, null, 2), { mode: 0o600 });
+  // `mode` applies only when the file is created; an older file keeps its own.
+  chmodSync(path, 0o600);
 }
 
 export function toStorageCookie(baseURL: string, cookie: Cookie, path = "/"): StorageCookie {
