@@ -94,6 +94,17 @@ describe("readStorageState / writeStorageState", () => {
     writeFileSync(path, JSON.stringify({ hello: "world" }));
     expect(readStorageState(path)).toBeNull();
   });
+
+  // Final review #1: a cookie list with a non-cookie in it crashed ensureCoreSession.
+  it("answers null when a cookie entry is not a cookie", () => {
+    const path = join(dir, "bad.json");
+    writeFileSync(path, JSON.stringify({ cookies: [null] }));
+    expect(readStorageState(path)).toBeNull();
+    writeFileSync(path, JSON.stringify({ cookies: ["erp.session_token=pasted"] }));
+    expect(readStorageState(path)).toBeNull();
+    writeFileSync(path, JSON.stringify({ cookies: [{ name: "erp.session_token" }] }));
+    expect(readStorageState(path)).toBeNull();
+  });
 });
 
 describe("ensureCoreSession", () => {
@@ -165,6 +176,52 @@ describe("ensureCoreSession", () => {
 
     expect(result.reused).toBe(false);
     expect(signIns(stack)).toHaveLength(1);
+  });
+
+  it("signs in without asking the stack when a cookie entry is not a cookie", async () => {
+    stack = await stackWithSession();
+    const statePath = join(dir, "a.json");
+    writeFileSync(statePath, JSON.stringify({ cookies: [null], origins: [] }));
+
+    const result = await ensureCoreSession({ baseURL: stack.baseURL, statePath, credentials: () => creds });
+
+    expect(result.reused).toBe(false);
+    expect(stack.requests.map((r) => r.url)).toEqual([SIGN_IN_PATH]);
+  });
+
+  // Final review #2: the browser would not send an erp.localhost cookie to
+  // another host, so a cookie saved for another host is "not signed in" even
+  // when the stack itself still takes it.
+  it("signs in again when the saved cookie belongs to another host", async () => {
+    stack = await stackWithSession();
+    const statePath = join(dir, "a.json");
+    writeStorageState(statePath, stored("http://erp.localhost", "live"));
+
+    const result = await ensureCoreSession({ baseURL: stack.baseURL, statePath, credentials: () => creds });
+
+    expect(result.reused).toBe(false);
+    expect(stack.requests.map((r) => r.url)).toEqual([SIGN_IN_PATH]);
+    expect(readStorageState(statePath)?.cookies[0]?.domain).toBe("127.0.0.1");
+  });
+
+  it("takes a domain cookie (leading dot) as the stack's own", async () => {
+    stack = await stackWithSession();
+    const statePath = join(dir, "a.json");
+    const state = stored(stack.baseURL, "live");
+    writeStorageState(statePath, {
+      ...state,
+      cookies: state.cookies.map((c) => ({ ...c, domain: `.${c.domain}` })),
+    });
+
+    const result = await ensureCoreSession({
+      baseURL: stack.baseURL,
+      statePath,
+      credentials: () => {
+        throw new Error("credentials must not be asked for");
+      },
+    });
+
+    expect(result.reused).toBe(true);
   });
 
   // Review Focus 1.

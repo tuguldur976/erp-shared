@@ -31,8 +31,15 @@ export function readStorageState(path: string): StorageState | null {
   }
   if (typeof parsed !== "object" || parsed === null) return null;
   const { cookies, origins } = parsed as { cookies?: unknown; origins?: unknown };
-  if (!Array.isArray(cookies)) return null;
-  return { cookies: cookies as StorageCookie[], origins: Array.isArray(origins) ? origins : [] };
+  if (!Array.isArray(cookies) || !cookies.every(isCookieEntry)) return null;
+  return { cookies, origins: Array.isArray(origins) ? origins : [] };
+}
+
+// Only what reuse reads is checked; one bad entry makes the whole file untrusted.
+function isCookieEntry(entry: unknown): entry is StorageCookie {
+  if (typeof entry !== "object" || entry === null) return false;
+  const { name, value, domain } = entry as { name?: unknown; value?: unknown; domain?: unknown };
+  return typeof name === "string" && typeof value === "string" && typeof domain === "string";
 }
 
 /** Owner-only: the file holds a live session cookie. */
@@ -59,7 +66,7 @@ export function toStorageCookie(baseURL: string, cookie: Cookie, path = "/"): St
  * Reuses the saved session while core-web still takes it; otherwise signs in
  * and writes the file with Core's cookies only. credentials() is called only
  * when a sign-in is needed, so a reused cookie never asks for a password.
- * On reuse `cookies` is every stored cookie, module ones (scm_jwt) included.
+ * On reuse `cookies` is every stored cookie for this host, module ones (scm_jwt) included.
  */
 export async function ensureCoreSession(opts: {
   baseURL: string;
@@ -68,7 +75,12 @@ export async function ensureCoreSession(opts: {
 }): Promise<{ cookies: Cookie[]; reused: boolean }> {
   const saved = readStorageState(opts.statePath);
   if (saved !== null) {
-    const cookies = saved.cookies.map(({ name, value }) => ({ name, value }));
+    // A cookie saved for another host (E2E_BASE_URL changed) would be alive on
+    // the stack, yet the browser would never send it: only this host's count.
+    const host = new URL(opts.baseURL).hostname;
+    const cookies = saved.cookies
+      .filter((c) => c.domain.replace(/^\./, "") === host)
+      .map(({ name, value }) => ({ name, value }));
     if (hasSessionCookie(cookies) && (await coreSessionAlive(opts.baseURL, cookies))) {
       return { cookies, reused: true };
     }
