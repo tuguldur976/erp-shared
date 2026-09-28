@@ -17,6 +17,14 @@ describe("baseUrl", () => {
   it("treats an empty value as unset", () => {
     expect(baseUrl({ E2E_BASE_URL: "" })).toBe(DEFAULT_BASE_URL);
   });
+
+  // v0.3.0 minor: without a scheme the first use threw a bare "Invalid URL".
+  it("names the variable when the value is not an http(s) URL", () => {
+    expect(() => baseUrl({ E2E_BASE_URL: "erp.localhost" })).toThrow(
+      "E2E_BASE_URL is not an http(s) URL: erp.localhost",
+    );
+    expect(() => baseUrl({ E2E_BASE_URL: "ftp://erp.localhost" })).toThrow(/E2E_BASE_URL is not/);
+  });
 });
 
 describe("adminCredentials", () => {
@@ -36,6 +44,12 @@ describe("adminCredentials", () => {
     expect(() =>
       adminCredentials("/x/.env.e2e", { E2E_ADMIN_EMAIL: "", E2E_ADMIN_PASSWORD: "pw" }),
     ).toThrow(/E2E_ADMIN_EMAIL/);
+  });
+
+  it("points at the example file when the module names one", () => {
+    expect(() => adminCredentials("/x/.env.e2e", {}, { example: "e2e/env.example" })).toThrow(
+      /Copy e2e\/env\.example to start\./,
+    );
   });
 
   // Review Focus 2: a value must never reach a message.

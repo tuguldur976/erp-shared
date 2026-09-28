@@ -23,17 +23,31 @@ export function loadEnvFile(path: string): boolean {
 /** The stack under test. Pointing a run elsewhere is one variable, not a code change. */
 export function baseUrl(env: Env = process.env): string {
   const value = env.E2E_BASE_URL;
-  return value === undefined || value === "" ? DEFAULT_BASE_URL : value;
+  if (value === undefined || value === "") return DEFAULT_BASE_URL;
+  // Checked here, once: without a scheme every later new URL() threw a bare
+  // "Invalid URL" that named no variable. The value is a URL, not a secret.
+  if (!URL.canParse(value) || !/^https?:$/.test(new URL(value).protocol)) {
+    throw new Error(`E2E_BASE_URL is not an http(s) URL: ${value}`);
+  }
+  return value;
 }
 
-/** The Core admin account. The message names the variables and the file, never a value. */
-export function adminCredentials(envFile: string, env: Env = process.env): { email: string; password: string } {
+/**
+ * The Core admin account. The message names the variables and the file, never
+ * a value; `example` is the module's template to copy, when it has one.
+ */
+export function adminCredentials(
+  envFile: string,
+  env: Env = process.env,
+  hint: { example?: string } = {},
+): { email: string; password: string } {
   const email = env.E2E_ADMIN_EMAIL ?? "";
   const password = env.E2E_ADMIN_PASSWORD ?? "";
   if (email === "" || password === "") {
     throw new Error(
       `Set E2E_ADMIN_EMAIL and E2E_ADMIN_PASSWORD in ${envFile}. ` +
-        "They are a Core admin account on the stack under test.",
+        "They are a Core admin account on the stack under test." +
+        (hint.example === undefined ? "" : ` Copy ${hint.example} to start.`),
     );
   }
   return { email, password };
