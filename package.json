@@ -25,7 +25,8 @@
   "scripts": {
     "build": "tsc -p tsconfig.build.json && tsx scripts/generate-theme-css.ts",
     "prepare": "npm run build",
-    "test": "vitest run"
+    "test": "vitest run",
+    "test:integration": "sh scripts/garage-test.sh"
   },
   "devDependencies": {
     "@fontsource-variable/inter": "^5.3.0",
