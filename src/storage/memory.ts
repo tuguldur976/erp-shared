@@ -8,14 +8,16 @@ export class MemoryStorage implements StorageAdapter {
 
   async put(key: string, data: ReadableStream | ArrayBuffer | Uint8Array, contentType: string): Promise<void> {
     assertValidKey(key);
-    const body = (await toBytes(data)).slice();
+    // new Uint8Array copies; a Node subclass's slice() would return a view.
+    const body = new Uint8Array(await toBytes(data));
     this.#objects.set(key, { body, contentType });
   }
 
   async get(key: string): Promise<StoredObject | null> {
     assertValidKey(key);
     const found = this.#objects.get(key);
-    return found ? { body: found.body.slice(), contentType: found.contentType } : null;
+    // new Uint8Array copies; a Node subclass's slice() would return a view.
+    return found ? { body: new Uint8Array(found.body), contentType: found.contentType } : null;
   }
 
   async head(key: string): Promise<ObjectInfo | null> {

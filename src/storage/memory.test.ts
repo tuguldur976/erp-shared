@@ -47,6 +47,16 @@ describe("MemoryStorage", () => {
     expect((await s.get("m.bin"))?.body).toEqual(bytes(1, 2, 3));
   });
 
+  it("copies a Node Buffer in and out, not a view of it", async () => {
+    const s = new MemoryStorage();
+    const input = Buffer.from([1, 2, 3]);
+    await s.put("buf.bin", input, "application/octet-stream");
+    input[0] = 7;
+    const got = await s.get("buf.bin");
+    if (got) got.body[1] = 7;
+    expect((await s.get("buf.bin"))?.body).toEqual(bytes(1, 2, 3));
+  });
+
   it("overwrites on a second put of the same key", async () => {
     const s = new MemoryStorage();
     await s.put("k.txt", bytes(1), "text/plain");
