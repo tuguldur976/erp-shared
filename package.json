@@ -1,7 +1,7 @@
 {
   "name": "@erp/shared",
-  "version": "0.3.1",
-  "description": "Shared ERP design tokens and E2E helpers for the ERP module repos",
+  "version": "0.4.0",
+  "description": "Shared ERP design tokens, E2E helpers and object storage adapter for the ERP module repos",
   "type": "module",
   "license": "MIT",
   "repository": {
@@ -20,6 +20,10 @@
     "./e2e": {
       "types": "./dist/e2e/index.d.ts",
       "import": "./dist/e2e/index.js"
+    },
+    "./storage": {
+      "types": "./dist/storage/index.d.ts",
+      "import": "./dist/storage/index.js"
     }
   },
   "scripts": {
