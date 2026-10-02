@@ -113,7 +113,7 @@ new S3Storage({
 });
 
 // Unit tests
-const storage = new MemoryStorage();
+const testStorage = new MemoryStorage();
 ```
 
 `region` is required: aws4fetch guesses it only from AWS and R2 host names,

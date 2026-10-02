@@ -34,7 +34,7 @@ describe("S3Storage against Garage", () => {
 
   // Review Focus 1: the signed path and Garage's canonical path must agree for any character.
   it("round-trips a key with spaces, +, Cyrillic and other reserved characters", async () => {
-    const key = `products/${crypto.randomUUID()}/зураг 1+(2)!'*~;=,@$&.jpg`;
+    const key = `products/${crypto.randomUUID()}/зураг 1+(2)!'*~;=,@$&#?%.jpg`;
     await storage.put(key, jpeg, "image/jpeg");
     expect((await storage.get(key))?.body).toEqual(jpeg);
     await storage.delete(key);

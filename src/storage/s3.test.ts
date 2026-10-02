@@ -183,18 +183,26 @@ describe("S3Storage — options", () => {
     },
   );
 
-  it("refuses an endpoint that is not an http(s) URL", () => {
-    for (const bad of ["object-storage:3900", GARAGE.secretAccessKey]) {
+  it("refuses an endpoint that is not a plain http(s) URL, never echoing it", () => {
+    const bads: [string, string?][] = [
+      ["object-storage:3900"],
+      [GARAGE.secretAccessKey],
+      ["http://u:hunter2@h:3900", "hunter2"],
+      ["http://h:3900?x=secretq", "secretq"],
+      ["http://h:3900#secretfrag", "secretfrag"],
+    ];
+    for (const [bad, secret] of bads) {
       let error: unknown;
       try {
         new S3Storage({ ...GARAGE, endpoint: bad });
       } catch (e) {
         error = e;
       }
-      expect(error).toBeInstanceOf(TypeError);
+      expect(error, bad).toBeInstanceOf(TypeError);
       const message = (error as Error).message;
       expect(message).toContain("endpoint");
       expect(message).not.toContain(bad);
+      if (secret) expect(message).not.toContain(secret);
     }
   });
 });

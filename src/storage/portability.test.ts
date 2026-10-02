@@ -9,7 +9,7 @@ const shipped = readdirSync(DIR).filter((f) => f.endsWith(".ts") && !f.endsWith(
 
 describe("storage portability (R75)", () => {
   it("finds the shipped files", () => {
-    expect(shipped).toEqual(expect.arrayContaining(["adapter.ts", "index.ts", "key.ts", "memory.ts", "s3.ts"]));
+    expect(shipped).toEqual(expect.arrayContaining(["adapter.ts", "bytes.ts", "index.ts", "key.ts", "memory.ts", "s3.ts"]));
   });
 
   it.each(shipped)("%s uses no Node-only API", (file) => {
