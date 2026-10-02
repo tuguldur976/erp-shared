@@ -36,5 +36,8 @@
   },
   "engines": {
     "node": ">=20.12"
+  },
+  "dependencies": {
+    "aws4fetch": "1.0.20"
   }
 }
