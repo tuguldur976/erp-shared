@@ -37,7 +37,7 @@ export class S3Storage implements StorageAdapter {
       }
     }
     if (!URL.canParse(opts.endpoint) || !/^https?:$/.test(new URL(opts.endpoint).protocol)) {
-      throw new TypeError(`S3Storage: endpoint is not an http(s) URL: ${opts.endpoint}`);
+      throw new TypeError(`S3Storage: option "endpoint" must be an http(s) URL`);
     }
     this.#client = new AwsClient({
       accessKeyId: opts.accessKeyId,

@@ -184,6 +184,17 @@ describe("S3Storage — options", () => {
   );
 
   it("refuses an endpoint that is not an http(s) URL", () => {
-    expect(() => new S3Storage({ ...GARAGE, endpoint: "object-storage:3900" })).toThrow(/endpoint/);
+    for (const bad of ["object-storage:3900", GARAGE.secretAccessKey]) {
+      let error: unknown;
+      try {
+        new S3Storage({ ...GARAGE, endpoint: bad });
+      } catch (e) {
+        error = e;
+      }
+      expect(error).toBeInstanceOf(TypeError);
+      const message = (error as Error).message;
+      expect(message).toContain("endpoint");
+      expect(message).not.toContain(bad);
+    }
   });
 });
