@@ -16,4 +16,13 @@ export {
   type StorageCookie,
   type StorageState,
 } from "./storage.js";
+export {
+  PHONES,
+  phoneContext,
+  readWidths,
+  TABLET_EDGE,
+  widthProblems,
+  type PageWidths,
+  type PhoneSize,
+} from "./phone.js";
 export { checkStackFreshness, freshnessFrom, staleStackWarning, type Freshness } from "./stale.js";
