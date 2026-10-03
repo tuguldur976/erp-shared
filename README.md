@@ -1,6 +1,6 @@
 # @erp/shared
 
-Shared design tokens (`/tokens`), E2E helpers (`/e2e`, since v0.3.0) and the object storage adapter (`/storage`, since v0.4.0) for the
+Shared design tokens (`/tokens`), E2E helpers (`/e2e`, since v0.3.0; phone checks since v0.5.0) and the object storage adapter (`/storage`, since v0.4.0) for the
 modular ERP repos: erp-core, scm, and
 [spark-resellers](https://github.com/tuguldur976/spark-resellers) (Sales / Order-to-Cash).
 Later: `/types`, `/utils`.
@@ -9,7 +9,7 @@ Later: `/types`, `/utils`.
 
 ```jsonc
 // pnpm consumer (spark-resellers) and npm consumer (supplychain) — same line:
-"dependencies": { "@erp/shared": "git+https://github.com/tuguldur976/erp-shared.git#v0.4.0" }
+"dependencies": { "@erp/shared": "git+https://github.com/tuguldur976/erp-shared.git#v0.5.0" }
 ```
 
 Use the explicit git+https form — the github: shorthand can resolve to git+ssh, which fails in containers/CI without GitHub SSH keys.
@@ -79,6 +79,33 @@ door, so they share one budget: scm's seed plus its two users is already 3.
 Leave 10 s of quiet before the next suite or a re-run; the window restarts
 only after 10 s without a sign-in. `checkStackFreshness` warns when the running
 container is older than the module's last product commit.
+
+### Phone checks (erp-rules R108, since v0.5.0)
+
+R108: below 768px every module shows the phone shell (top bar + drawer), and
+no page scrolls sideways from 320px up (WCAG 1.4.10). These helpers keep the
+sizes and the threshold the same in every module:
+
+| Export | What |
+|---|---|
+| `PHONES` | 393×852 (owner's iPhone 16), 390×664 (short screen), 430×932 (large phone), 320×568 (WCAG 320px) |
+| `TABLET_EDGE` | 768×1024 — the first width with the desktop shell |
+| `phoneContext(size)` | Chromium phone-emulation context options |
+| `readWidths` | pass to `page.evaluate` — the page's inner, client and scroll width |
+| `widthProblems(widths, deviceWidth)` | every way the page failed to fit, as sentences; `[]` = fits |
+
+```ts
+const context = await browser.newContext({ ...phoneContext(size), baseURL, storageState }); // a Chromium Browser
+const page = await context.newPage();
+await page.goto(path);                       // a FRESH load — the bug shows only on the first render
+expect(widthProblems(await page.evaluate(readWidths), size.width)).toEqual([]);
+```
+
+Open the context from **Chromium**, not WebKit (`devices['iPhone …']`):
+with `isMobile` Chromium widens the layout viewport to fit a first render
+wider than the device, like Android Chrome; WebKit does not, and scm's bug
+G-04a-1 passed on it. Run every size in `PHONES` — a module that picks a subset
+drifts from the others. The spec keeps its own pages, headings and drawer steps.
 
 ## Object storage (`@erp/shared/storage`, since v0.4.0)
 
