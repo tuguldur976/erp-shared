@@ -1,7 +1,7 @@
 {
   "name": "@erp/shared",
-  "version": "0.3.1",
-  "description": "Shared ERP design tokens and E2E helpers for the ERP module repos",
+  "version": "0.4.0",
+  "description": "Shared ERP design tokens, E2E helpers and object storage adapter for the ERP module repos",
   "type": "module",
   "license": "MIT",
   "repository": {
@@ -20,12 +20,17 @@
     "./e2e": {
       "types": "./dist/e2e/index.d.ts",
       "import": "./dist/e2e/index.js"
+    },
+    "./storage": {
+      "types": "./dist/storage/index.d.ts",
+      "import": "./dist/storage/index.js"
     }
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json && tsx scripts/generate-theme-css.ts",
     "prepare": "npm run build",
-    "test": "vitest run"
+    "test": "vitest run",
+    "test:integration": "sh scripts/garage-test.sh"
   },
   "devDependencies": {
     "@fontsource-variable/inter": "^5.3.0",
@@ -36,5 +41,8 @@
   },
   "engines": {
     "node": ">=20.12"
+  },
+  "dependencies": {
+    "aws4fetch": "1.0.20"
   }
 }
